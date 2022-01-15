@@ -13,9 +13,9 @@ public class CreateFiles {
 
     public CreateFiles() {
         final long start = System.currentTimeMillis();
-
+        
         createLanguageFile();
-
+        
         final long fin = System.currentTimeMillis() - start;
         String logMessage = "All files have been generated and registered successfully! (" + fin + "ms)";
         instance.getLogger().log(Level.INFO, logMessage);
@@ -39,14 +39,13 @@ public class CreateFiles {
         }
         filePath += ".yml";
         var existingFile = new File(instance.getDataFolder(), filePath);
-        File returnValue = null;
+        File returnValue;
         if (!existingFile.exists()) {
             System.out.println("File does not exist");
             // If the existing file does not exist, create a new file from the JAR and rename it to the value in config
             instance.saveResource(fileName + ".yml", false);
             var defaultFile = new File(instance.getDataFolder(), fileName + ".yml");
             boolean f = defaultFile.renameTo(existingFile);
-            System.out.println(3);
             if (!f)
                 returnValue = createFile(pathInConfig, fileName); // If it fails, try again
             else returnValue = existingFile;
@@ -60,7 +59,7 @@ public class CreateFiles {
             instance.saveResource(fileName + ".yml", true);
             var newFile = new File(instance.getDataFolder(), fileName + ".yml"); // Create a file from the JAR
             var newFileConfiguration = new YamlConfiguration();
-            try {
+            try { 
                 newFileConfiguration.load(newFile); // Create a file from the JAR
             }
             catch (IOException | InvalidConfigurationException e) { e.printStackTrace(); }
@@ -78,7 +77,6 @@ public class CreateFiles {
             newFile.renameTo(existingFile);
             returnValue = existingFile;
         }
-        System.out.println(10);
         return returnValue;
     }
 }
