@@ -6,6 +6,7 @@ This is a file manager that is designed to keep things simple and allow you to o
 - First of all, import FileManager.class and ManagedFile.class to your project
 - After that create a global field with type FileManager in your main class  
 - On enable, create a new instance of the FileManager class, and assign it to the field you created
+- Adding saveAll() function on disable is recommended to make sure all the files on the Hard Drive is updated
 ```java
 private static FileManager fileManager;
 ```
@@ -14,6 +15,13 @@ private static FileManager fileManager;
 public void onEnable() {
     fileManager = new FileManager(this);
 
+}
+```
+```java
+@Override
+public void onDisable() {
+    fileManager.saveAll();
+    
 }
 ```
 
