@@ -5,7 +5,9 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FileManager {
@@ -50,6 +52,25 @@ public class FileManager {
      */
     public Map<String, ManagedFile> getFilesMap() {
         return files;
+    }
+
+    /**
+     * Get all the available IDs
+     */
+    public List<String> getFileIDs() {
+        List<String> idList = new ArrayList<>();
+        for (var entry : files.entrySet())
+            idList.add(entry.getKey());
+        return idList;
+    }
+    /**
+     * Get all the available Files
+     */
+    public List<ManagedFile> getAllFiles() {
+        List<ManagedFile> fileList = new ArrayList<>();
+        for (var entry : files.entrySet())
+            fileList.add(entry.getValue());
+        return fileList;
     }
 
     /**
