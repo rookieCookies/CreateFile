@@ -3,7 +3,7 @@ This is a file manager that is designed to keep things simple and allow you to o
 
 # The Basics
 ### Starting
-- First of all, import FileManager.class and MFile.class to your project
+- First of all, import FileManager.class and ManagedFile.class to your project
 - After that create a global field with type FileManager in your main class  
 - On enable, create a new instance of the FileManager class, and assign it to the field you created
 ```java
@@ -47,27 +47,27 @@ fileManager.removeFile("example_file");
 
 ### Getting a file from the FileManager
 - While referancing your FileManager variable call the function getFile(), the first parameter is for the ID you entered while creating the file.
-- This function will **NOT** return a File, it will return a MFile.
+- This function will **NOT** return a File, it will return a ManagedFile.
 - Register the returned value to a variable and call the function getFile() function while referancing this variable
 ```java
 MFile managedFile = fileManager.getFile("example_file");
 File actualFile = managedFile.getFile();
 ```
 
-# MFiles
+# ManagedFiles
 
-## What is an MFile
+## What is an ManagedFile
 - An MFile is an Object that contains a few utility tools to keep everything nice and clean
 - It contains the File, the FileConfiguration of the File, and getter/setter methods for these which makes it cleaner to use
 
-### How to create an MFile
+### How to create an ManagedFile
 - Most of the times the file manager will create the MFile for you and you don't need to create the MFile yourself
 - You can just create a new instance of the MFile class and add your file as a parameter or you can enter no parameters and enter in the values manually! (Not Recommended)
 
-### How to get a file from the MFile
+### How to get a file from the ManagedFile
 - Simple! Just use the getFile() function!
 
-### How to get the file configuration that is inside an MFile
+### How to get the file configuration that is inside an ManagedFile
 - Use this getFileConfiguration() function!
 
 ### What is updateFileConfiguration() function?
