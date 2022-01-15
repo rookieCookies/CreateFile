@@ -1,6 +1,5 @@
 package test.test;
 
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
@@ -10,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FileManager {
-    private final Map<String, MFile> files;
+    private final Map<String, ManagedFile> files;
     private final Plugin instance;
     FileManager(Plugin instance) {
         this.instance = instance;
@@ -23,7 +22,7 @@ public class FileManager {
      * @param file The file that will be registered
      */
     public void addFile(String id, File file) {
-        var managedFile = new MFile(file);
+        var managedFile = new ManagedFile(file);
         files.put(id, managedFile);
     }
 
@@ -40,7 +39,7 @@ public class FileManager {
      * @param id The ID you used to register the file
      * @return The file, or null if it does not exist
      */
-    public MFile getFile(String id) {
+    public ManagedFile getFile(String id) {
         if (!files.containsKey(id))
             return null;
         return files.get(id);
@@ -49,9 +48,18 @@ public class FileManager {
     /**
      * Used to get the file manager's map variable. Is not recommended
      */
-    public Map<String, MFile> getFilesMap() {
+    public Map<String, ManagedFile> getFilesMap() {
         return files;
     }
+
+    /**
+     * Save all the files to the hard drive
+     */
+    public void saveAll() {
+        for (var entry : files.entrySet())
+            entry.getValue().save();
+    }
+
     /**
      * Creates a file, if the file already exists update the file saving the old configurations
      * @param pathInConfig The config path that contains the name of the file, generates the path if it does not exist
@@ -59,49 +67,53 @@ public class FileManager {
      * @return The updated/generated file
      */
     File create(String pathInConfig, String fileName) {
-        var filePath = instance.getConfig().getString(pathInConfig);
-        if (filePath == null) {
+        var configuredFilePath = instance.getConfig().getString(pathInConfig);
+        if (configuredFilePath == null) {
             instance.getConfig().set(pathInConfig, fileName);
-            filePath = instance.getConfig().getString(pathInConfig);
             instance.saveConfig();
+            configuredFilePath = instance.getConfig().getString(pathInConfig, "");
         }
-        filePath += ".yml";
+        if(!configuredFilePath.endsWith(".yml"))
+            configuredFilePath += ".yml";
+        String filePath = configuredFilePath;
+
         var existingFile = new File(instance.getDataFolder(), filePath);
+
+        // If the existing file does not exist, create a new file from the JAR and rename it to the value in config
         if (!existingFile.exists()) {
-            // If the existing file does not exist, create a new file from the JAR and rename it to the value in config
             instance.saveResource(fileName + ".yml", false);
             var defaultFile = new File(instance.getDataFolder(), fileName + ".yml");
+
             var i = 5;
             while (!defaultFile.renameTo(existingFile) && i > 0)
                 i--;
+            if (!defaultFile.getName().equals(existingFile.getName()))
+                throw new RuntimeException("An error occurred while trying to rename a file");
             return existingFile;
         }
-        // Loop through all the values to make sure they are updated
-        var existingFileConfiguration = new YamlConfiguration();
-        try {
-            existingFileConfiguration.load(existingFile); // Loading the existing files values to the configuration
-        } catch (IOException | InvalidConfigurationException e) { e.printStackTrace(); }
+
+        // Cache the existing file
+        YamlConfiguration existingFileConfiguration = YamlConfiguration.loadConfiguration(existingFile);
+
+        // Create the file from JAR
         instance.saveResource(fileName + ".yml", true);
-        var newFile = new File(instance.getDataFolder(), fileName + ".yml"); // Create a file from the JAR
-        var newFileConfiguration = new YamlConfiguration();
-        try {
-            newFileConfiguration.load(newFile); // Create a file from the JAR
-        }
-        catch (IOException | InvalidConfigurationException e) { e.printStackTrace(); }
-        Map<String, Object> sec = existingFileConfiguration.getValues(true);
-        for (Map.Entry<String, Object> entry : sec.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (value.equals(newFileConfiguration.get(key)) || !newFileConfiguration.contains(key))
-                continue;
-            newFileConfiguration.set(key, value);
+
+        File fileFromJar = new File(instance.getDataFolder(), fileName + ".yml"); // Create a file from the JAR
+        YamlConfiguration fileFromJarConfiguration = new YamlConfiguration().loadConfiguration(fileFromJar);
+
+        // Restore the values from the old file
+        for (var existingEntry : existingFileConfiguration.getValues(true).entrySet()) {
+            if(!fileFromJarConfiguration.contains(existingEntry.getKey()) || !existingEntry.getValue().equals(fileFromJarConfiguration.get(existingEntry.getKey())))
+                fileFromJarConfiguration.set(existingEntry.getKey(), existingEntry.getValue());
         }
         try {
-            newFileConfiguration.save(newFile);
+            fileFromJarConfiguration.save(fileFromJar);
         } catch (IOException e) { e.printStackTrace(); }
         var i = 5;
-        while (!newFile.renameTo(existingFile) && i > 0)
+        while (!fileFromJar.renameTo(existingFile) && i > 0)
             i--;
+        if (!fileFromJar.getName().equals(existingFile.getName()))
+            throw new RuntimeException("An error occurred while trying to rename a file");
         return existingFile;
     }
 }
