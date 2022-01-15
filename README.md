@@ -21,6 +21,7 @@ public void onEnable() {
 ##### Creating a file is extremely simple!
 - After assigning your FileManager variable, call the create() function from the FileManager variable
 - The first parameter you will use is used to get the file name from the config
+- When creating a file, if the file already exists it will copy the existing settings from the old file to the new one so no data will be lost!
 ```java
 fileManager.create("example_config_path", "example");
 ```
