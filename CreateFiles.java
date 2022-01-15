@@ -2,35 +2,24 @@ package test.test;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class CreateFiles {
-    private final Test instance = Test.getInstance();
+    private final Plugin instance;
 
-    public CreateFiles() {
-        final long start = System.currentTimeMillis();
-        
-        createLanguageFile();
-        
-        final long fin = System.currentTimeMillis() - start;
-        String logMessage = "All files have been generated and registered successfully! (" + fin + "ms)";
-        instance.getLogger().log(Level.INFO, logMessage);
-    }
+    public CreateFiles(Plugin instance) { this.instance = instance; }
 
-    void createLanguageFile() {
-        var languageFile = createFile("language_file", "default");
-        instance.setLanguageFileConfiguration(new YamlConfiguration());
-        try {
-            instance.getLanguageFile().load(languageFile);
-            instance.getLogger().log(Level.INFO, "Successfully loaded the language file!");
-        } catch (IOException | InvalidConfigurationException e) { e.printStackTrace(); }
-    }
-
-    File createFile(String pathInConfig, String fileName) {
+    /**
+     * Creates a file, if the file already exists update the file saving the old configurations
+     * @param pathInConfig The config path that contains the name of the file, generates the path if it does not exist
+     * @param fileName The name of the file that is in the JAR itself
+     * @return The updated/generated file
+     */
+    File create(String pathInConfig, String fileName) {
         var filePath = instance.getConfig().getString(pathInConfig);
         if (filePath == null) {
             instance.getConfig().set(pathInConfig, fileName);
@@ -41,13 +30,12 @@ public class CreateFiles {
         var existingFile = new File(instance.getDataFolder(), filePath);
         File returnValue;
         if (!existingFile.exists()) {
-            System.out.println("File does not exist");
             // If the existing file does not exist, create a new file from the JAR and rename it to the value in config
             instance.saveResource(fileName + ".yml", false);
             var defaultFile = new File(instance.getDataFolder(), fileName + ".yml");
             boolean f = defaultFile.renameTo(existingFile);
             if (!f)
-                returnValue = createFile(pathInConfig, fileName); // If it fails, try again
+                returnValue = create(pathInConfig, fileName); // If it fails, try again
             else returnValue = existingFile;
             // We don't need to update the values here since it will already get the values from the JAR
         } else {
@@ -59,7 +47,7 @@ public class CreateFiles {
             instance.saveResource(fileName + ".yml", true);
             var newFile = new File(instance.getDataFolder(), fileName + ".yml"); // Create a file from the JAR
             var newFileConfiguration = new YamlConfiguration();
-            try { 
+            try {
                 newFileConfiguration.load(newFile); // Create a file from the JAR
             }
             catch (IOException | InvalidConfigurationException e) { e.printStackTrace(); }
