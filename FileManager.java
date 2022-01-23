@@ -1,5 +1,3 @@
-package asar_development.asarsmp;
-
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
