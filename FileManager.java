@@ -1,3 +1,4 @@
+package asar_development.asarsmp;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -19,9 +20,9 @@ public class FileManager {
      * @param id The ID of the file, you will access the file using this ID
      * @param file The file that will be registered
      */
-    public ManagedFile addFile(FileID id, File file) {
-        var managedFile = new ManagedFile(file);
-        files.put(id.toString().toLowerCase(Locale.ROOT), managedFile);
+    public ManagedFile addFile(String id, File file) {
+        ManagedFile managedFile = new ManagedFile(file);
+        files.put(id.toLowerCase(Locale.ROOT), managedFile);
         return getFile(id);
     }
 
@@ -29,7 +30,7 @@ public class FileManager {
      * Remove a file from the file manager
      * @param id The ID you used to register this file
      */
-    public void removeFile(FileID id) {
+    public void removeFile(String id) {
         getFile(id).delete();
         files.remove(id.toString().toLowerCase(Locale.ROOT));
     }
@@ -39,8 +40,8 @@ public class FileManager {
      * @param id The ID you used to register the file
      * @return The file, or null if it does not exist
      */
-    public ManagedFile getFile(FileID id) {
-        String n = id.toString().toLowerCase(Locale.ROOT);
+    public ManagedFile getFile(String id) {
+        String n = id.toLowerCase(Locale.ROOT);
         if (!files.containsKey(n))
             return null;
         return files.get(n);
@@ -58,7 +59,7 @@ public class FileManager {
      */
     public List<String> getFileIDs() {
         List<String> idList = new ArrayList<>();
-        for (var entry : files.entrySet())
+        for (Map.Entry<String, ManagedFile> entry : files.entrySet())
             idList.add(entry.getKey());
         return idList;
     }
@@ -67,7 +68,7 @@ public class FileManager {
      */
     public List<ManagedFile> getAllFiles() {
         List<ManagedFile> fileList = new ArrayList<>();
-        for (var entry : files.entrySet())
+        for (Map.Entry<String, ManagedFile> entry : files.entrySet())
             fileList.add(entry.getValue());
         return fileList;
     }
@@ -76,7 +77,7 @@ public class FileManager {
      * Save all the files to the hard drive
      */
     public void saveAll() {
-        for (var entry : files.entrySet())
+        for (Map.Entry<String, ManagedFile> entry : files.entrySet())
             entry.getValue().save();
     }
 
@@ -87,7 +88,7 @@ public class FileManager {
      * @return The updated/generated file
      */
     public File create(String pathInConfig, String fileName) {
-        var configuredFilePath = instance.getConfig().getString(pathInConfig);
+        String configuredFilePath = instance.getConfig().getString(pathInConfig);
         if (configuredFilePath == null) {
             instance.getConfig().set(pathInConfig, fileName);
             instance.saveConfig();
@@ -97,14 +98,14 @@ public class FileManager {
             configuredFilePath += ".yml";
         String filePath = configuredFilePath;
 
-        var existingFile = new File(instance.getDataFolder(), filePath);
+        File existingFile = new File(instance.getDataFolder(), filePath);
 
         // If the existing file does not exist, create a new file from the JAR and rename it to the value in config
         if (!existingFile.exists()) {
             instance.saveResource(fileName + ".yml", false);
-            var defaultFile = new File(instance.getDataFolder(), fileName + ".yml");
+            File defaultFile = new File(instance.getDataFolder(), fileName + ".yml");
 
-            var i = 5;
+            int i = 5;
             while (!defaultFile.renameTo(existingFile) && i > 0)
                 i--;
             return existingFile;
@@ -121,14 +122,14 @@ public class FileManager {
         YamlConfiguration fileFromJarConfiguration = YamlConfiguration.loadConfiguration(fileFromJar);
 
         // Restore the values from the old file
-        for (var existingEntry : existingFileConfiguration.getValues(true).entrySet()) {
+        for (Map.Entry<String, Object> existingEntry : existingFileConfiguration.getValues(true).entrySet()) {
             if(!fileFromJarConfiguration.contains(existingEntry.getKey()) /*|| !existingEntry.getValue().equals(fileFromJarConfiguration.get(existingEntry.getKey()))*/)
                 fileFromJarConfiguration.set(existingEntry.getKey(), existingEntry.getValue());
         }
         try {
             fileFromJarConfiguration.save(fileFromJar);
         } catch (IOException e) { e.printStackTrace(); }
-        var i = 5;
+        int i = 5;
         while (!fileFromJar.renameTo(existingFile) && i > 0)
             i--;
         return existingFile;
