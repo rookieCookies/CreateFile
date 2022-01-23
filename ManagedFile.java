@@ -1,5 +1,3 @@
-package dev.blocky.lotusrpg.managers.filemanager;
-
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
