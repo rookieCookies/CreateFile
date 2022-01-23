@@ -1,4 +1,4 @@
-package test.test;
+package dev.blocky.lotusrpg.managers.filemanager;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -54,6 +54,26 @@ public class ManagedFile {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Clears everything that the file contains
+     * Essentialy making it an empty file
+     */
+
+    public void clear() {
+        fileConfiguration = new YamlConfiguration();
+        save();
+    }
+
+    /**
+     * Deletes the file
+     * Both from the hard drive and the RAM
+     */
+    public void delete() {
+        file.delete();
+        file = null;
+        fileConfiguration = null;
     }
 
     /**
