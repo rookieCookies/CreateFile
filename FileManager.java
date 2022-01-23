@@ -1,19 +1,15 @@
-package test.test;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FileManager {
     private final Map<String, ManagedFile> files;
     private final Plugin instance;
-    FileManager(Plugin instance) {
+    public FileManager(Plugin instance) {
         this.instance = instance;
         files = new HashMap<>();
     }
@@ -23,17 +19,19 @@ public class FileManager {
      * @param id The ID of the file, you will access the file using this ID
      * @param file The file that will be registered
      */
-    public void addFile(String id, File file) {
+    public ManagedFile addFile(FileID id, File file) {
         var managedFile = new ManagedFile(file);
-        files.put(id, managedFile);
+        files.put(id.toString().toLowerCase(Locale.ROOT), managedFile);
+        return getFile(id);
     }
 
     /**
      * Remove a file from the file manager
      * @param id The ID you used to register this file
      */
-    public void removeFile(String id) {
-        files.remove(id);
+    public void removeFile(FileID id) {
+        getFile(id).delete();
+        files.remove(id.toString().toLowerCase(Locale.ROOT));
     }
 
     /**
@@ -41,10 +39,11 @@ public class FileManager {
      * @param id The ID you used to register the file
      * @return The file, or null if it does not exist
      */
-    public ManagedFile getFile(String id) {
-        if (!files.containsKey(id))
+    public ManagedFile getFile(FileID id) {
+        String n = id.toString().toLowerCase(Locale.ROOT);
+        if (!files.containsKey(n))
             return null;
-        return files.get(id);
+        return files.get(n);
     }
 
     /**
@@ -87,7 +86,7 @@ public class FileManager {
      * @param fileName The name of the file that is in the JAR itself
      * @return The updated/generated file
      */
-    File create(String pathInConfig, String fileName) {
+    public File create(String pathInConfig, String fileName) {
         var configuredFilePath = instance.getConfig().getString(pathInConfig);
         if (configuredFilePath == null) {
             instance.getConfig().set(pathInConfig, fileName);
@@ -108,8 +107,6 @@ public class FileManager {
             var i = 5;
             while (!defaultFile.renameTo(existingFile) && i > 0)
                 i--;
-            if (!defaultFile.getName().equals(existingFile.getName()))
-                throw new RuntimeException("An error occurred while trying to rename a file");
             return existingFile;
         }
 
@@ -120,11 +117,12 @@ public class FileManager {
         instance.saveResource(fileName + ".yml", true);
 
         File fileFromJar = new File(instance.getDataFolder(), fileName + ".yml"); // Create a file from the JAR
-        YamlConfiguration fileFromJarConfiguration = new YamlConfiguration().loadConfiguration(fileFromJar);
+        new YamlConfiguration();
+        YamlConfiguration fileFromJarConfiguration = YamlConfiguration.loadConfiguration(fileFromJar);
 
         // Restore the values from the old file
         for (var existingEntry : existingFileConfiguration.getValues(true).entrySet()) {
-            if(!fileFromJarConfiguration.contains(existingEntry.getKey()) || !existingEntry.getValue().equals(fileFromJarConfiguration.get(existingEntry.getKey())))
+            if(!fileFromJarConfiguration.contains(existingEntry.getKey()) /*|| !existingEntry.getValue().equals(fileFromJarConfiguration.get(existingEntry.getKey()))*/)
                 fileFromJarConfiguration.set(existingEntry.getKey(), existingEntry.getValue());
         }
         try {
@@ -133,8 +131,6 @@ public class FileManager {
         var i = 5;
         while (!fileFromJar.renameTo(existingFile) && i > 0)
             i--;
-        if (!fileFromJar.getName().equals(existingFile.getName()))
-            throw new RuntimeException("An error occurred while trying to rename a file");
         return existingFile;
     }
 }
