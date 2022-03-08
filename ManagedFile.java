@@ -5,9 +5,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 
+@SuppressWarnings("unused")
 public class ManagedFile {
     private File file;
     private FileConfiguration fileConfiguration;
+    private Configuration configuration;
     ManagedFile() {
         fileConfiguration = new YamlConfiguration();
     }
@@ -23,10 +25,10 @@ public class ManagedFile {
     public File getFile() { return file; }
 
     /**
-     * Returns the file configuration, can be null
+     * Returns the file configuration as a Configuration class which is a safe & reporting class, can not be null though the file configuration in the Configuration can be
      * @return File configuration
      */
-    public FileConfiguration getFileConfiguration() { return fileConfiguration; }
+    public Configuration getConfiguration() { return configuration; }
 
     /**
      * Set the existing file, will require a updateFileConfiguration() to update the file configuration
@@ -41,7 +43,10 @@ public class ManagedFile {
     /**
      * Update the file configuration based on the existing file
      */
-    public void updateFileConfiguration() { loadFile(file); }
+    public void updateFileConfiguration() {
+        loadFile(file);
+        configuration = new Configuration(fileConfiguration);
+    }
 
     /**
      * Save the file
@@ -81,7 +86,6 @@ public class ManagedFile {
         fileConfiguration = new YamlConfiguration();
         try {
             fileConfiguration.load(file);
-        }
-        catch (IOException | InvalidConfigurationException e) { e.printStackTrace(); }
+        } catch (IOException | InvalidConfigurationException e) { e.printStackTrace(); }
     }
 }
