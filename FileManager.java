@@ -111,8 +111,8 @@ public class FileManager {
 
         // If the existing file does not exist, create a new file from the JAR and rename it to the value in config
         if (!existingFile.exists()) {
-            instance.saveResource(fileName + ".yml", false);
-            File defaultFile = new File(instance.getDataFolder(), fileName + ".yml");
+            instance.saveResource(filePath, false);
+            File defaultFile = new File(instance.getDataFolder(), filePath);
 
             int i = 5;
             while (!defaultFile.renameTo(existingFile) && i > 0) {
@@ -125,9 +125,9 @@ public class FileManager {
         YamlConfiguration existingFileConfiguration = YamlConfiguration.loadConfiguration(existingFile);
 
         // Create the file from JAR
-        instance.saveResource(fileName + ".yml", true);
+        instance.saveResource(filePath, true);
 
-        File fileFromJar = new File(instance.getDataFolder(), fileName + ".yml");
+        File fileFromJar = new File(instance.getDataFolder(), filePath);
         YamlConfiguration fileFromJarConfiguration = YamlConfiguration.loadConfiguration(fileFromJar);
 
         // Restore the values from the old file
